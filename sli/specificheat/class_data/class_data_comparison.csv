@@ -1,0 +1,9 @@
+﻿Group Names & Metal,Specific Heat (J/g°C),Decay Constant (k from Desmos fit)
+Station 1 (Nickel),0.444,0.361
+Station 2 (Copper-8),0.385,0.582
+Station 3 (Copper),0.385,0.574
+Station 4 (Nickel),0.411,0.439
+Station 5 (Aluminum-5),0.89,0.329
+Station 6 (Aluminum),0.89,0.378
+Station 7 (Copper),0.385,0.558
+Station 8 (Aluminum),0.89,0.744
