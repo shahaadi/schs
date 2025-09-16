@@ -9,5 +9,4 @@ Session Recordings:
 https://drive.google.com/drive/folders/1n4sg3-nZrAPnAKd-8X6zsplfVy-IDs0s?usp=sharing
 
 
-Final Project Link:
-https://github.com/ringholder/linearregression-orange
+Final Project contained in repo
