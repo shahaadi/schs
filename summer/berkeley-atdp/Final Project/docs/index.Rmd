@@ -1,0 +1,200 @@
+---
+title: "SDR0368.1 Data Science with R & Python - Final Project"
+output: html_notebook
+---
+
+
+
+## Statement of the data question and modeling objective:
+
+Data Question:
+What is the relationship between the age of an orange tree and the circumference of its trunk?
+
+Modeling Objective:
+The goal of the project is to predict this relationship, and whether or not the age and circumference of orange trees are correlated.
+My hypothesis is that the age and circumference of an orange tree are correlated, and that as the age increases, the circumference of each orange tree, on average, will increase.
+
+
+
+## Description of the data and response variable
+
+The Orange data frame is a dataset included in the R programming language containing 35 rows and 3 columns of records regarding the growth of orange trees. Data was taken from all 5 of the trees on 7 different days, so each of the 5 trees had 7 recorded entries in the dataset.
+  
+The three columns are as follows:
+  Tree - The Tree column contains numerical values indicating which tree  each data point corresponds to. There are 5 different trees, so there are 5 different numerical values in the column.
+  age - The age column contains numerical vectors indicating the age of the tree in days since 12/31/1968.
+  circumference - The circumference column contains numeric vectors indicating the trunk circumferences (in mm). This is likely to be “circumference at breast height”, a standard measurement in forestry.
+    
+The independent variable in my model will be the age of the tree, while the dependent (response) variable will be the circumference of the tree, as the goal is to find the correlation between the age and circumference.
+  
+  
+  
+## Exploratory data analysis (EDA):
+
+Partial view of dataset (all variables) in a table format:
+
+```{r}
+View(Orange)
+head(Orange)
+summary(Orange)
+```
+
+
+The visualization below displays what appears to be a direct correlation between the age and circumference of the orange trees, on average, using data from all of the trees but color-coded to display distinct trees. This is seen as the data points trend upwards when you look at the visualization from left to right, which holds true for both individual trees and the entire dataset.
+
+Scatter plot with different trees distinctly marked by color:
+
+```{r}
+library(ggplot2)
+orange_scatter <- ggplot(data = Orange, aes(x = age, y = circumference, 
+  color = Tree)) + 
+  geom_point(size = 2, alpha = 0.5) + 
+  theme_classic() +
+  ggtitle("Age vs Circumference of Orange Trees") +
+  xlab("Age (in days since 12/31/1968)") + 
+  ylab("Circumference (in mm)") + 
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 5))
+print(orange_scatter)
+```
+
+
+I chose not to use the model below, as finding and comparing the model coefficients for each line in a meaningful way would have been excessively difficult and more complex in comparison to doing it for the linear regression model based on the data from all of the trees (the 'final model'). However, we can still glean important information from the following model, as a simple look at the model shows that there appears to be a direct correlation between the age and circumference of each orange tree. This is different than the 'final model' as that model shows how the two variables are correlated in the data from all of the trees combined, whereas this model shows how the two variables are correlated in each specific tree.
+
+Visualization with the lines of best fit of the data points from each tree:
+
+```{r}
+library(dplyr)
+Orange %>% ggplot(aes(x = age, y = circumference, color = Tree)) + 
+  geom_point(size = 2, alpha = 0.5) + 
+  theme_classic() +
+  ggtitle("Age vs Circumference of Orange Trees") +
+  xlab("Age (in days since 12/31/1968)") + 
+  ylab("Circumference (in mm)") + 
+  geom_smooth(method = "lm", se = F, fullrange = T, aes(color = Tree)) +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 5))
+```
+
+
+The visualization below displays what appears to be a direct correlation between the age and circumference of the orange trees, on average, using data from all of the trees. This is seen as the data points trend upwards when you look at the visualization from left to right.
+
+Scatter plot with all trees, without distinctions between trees:
+
+```{r}
+library(ggplot2)
+orange_scatter <- ggplot(data = Orange, aes(x = age, y = circumference)) + 
+  geom_point(size = 2, alpha = 0.5) + 
+  theme_classic() +
+  ggtitle("Age vs Circumference of Orange Trees") +
+  xlab("Age (in days since 12/31/1968)") + 
+  ylab("Circumference (in mm)") + 
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 5))
+print(orange_scatter)
+```
+
+
+The visualization below displays what appears to be a direct correlation between the age and circumference of the orange trees, on average, using data from all of the trees. This is seen as the line of best fit slants upwards when you look at the visualization from left to right.
+
+Below is a visualization of the line of best fit (without the confidence interval) based on all of the data points in the scatter plot.
+
+```{r}
+library(dplyr)
+Orange %>% ggplot(aes(x = age, y = circumference)) + 
+  geom_point(size = 2, alpha = 0.5) + 
+  theme_classic() +
+  ggtitle("Age vs Circumference of Orange Trees") +
+  xlab("Age (in days since 12/31/1968)") + 
+  ylab("Circumference (in mm)") + 
+  geom_smooth(method = "lm", se = F, fullrange = T) +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 5))
+```
+
+
+
+## Explanation of modeling approach and why it was chosen:
+
+I chose to visualize the relationship between the age and circumference of the trees in the form of a scatter plot, as scatter plots are extremely useful when trying to find whether or not two variables have a relationship. Once I was able to create an appropriate scatter plot visualization, I understood that the two variables appeared to be correlated, as I had originally believed. This pattern was observed in both individual trees and the data from all of the trees combined. From this realization, I decided to use linear regression to further analyze the level of correlation between the two variables, and chose to create the following model:
+
+Below is a visualization of the line of best fit (including a 95% confidence interval) based on all of the data points in the scatter plot.
+
+```{r}
+library(dplyr)
+Orange %>% ggplot(aes(x = age, y = circumference)) + 
+  geom_point(size = 2, alpha = 0.5) + 
+  theme_classic() +
+  ggtitle("Age vs Circumference of Orange Trees") +
+  xlab("Age (in days since 12/31/1968)") + 
+  ylab("Circumference (in mm)") + 
+  geom_smooth(method = "lm", se = T, fullrange = T) +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 5))
+```
+
+
+
+## Assumptions:
+
+The assumption I made when I created the linear regression model was that all of the orange trees and their circumferences grew at constant, linear rates during the entirety of the original experiment from which the dataset was created. In other words, I assumed that the orange trees were in a protected, stable, homogeneous environment in which no factors that would make the circumference of each orange tree grow faster or slower existed. Examples of such factors include human contact, disease, and death.
+
+
+
+## Interpretations and interesting findings:
+
+As seen in the final model, the line of best fit slants upwards, which means that the slope/regression coefficient (or model coefficient, in this case) is positive. The confidence interval for the line of best fit also slants upwards, which shows that there is a direct correlation between the age of an orange tree and its circumference, on average.
+
+
+
+## Additional work and models
+
+Scatter plot with different trees distinctly marked by color and shape:
+
+```{r}
+library(ggplot2)
+orange_scatter <- ggplot(data = Orange, aes(x = age, y = circumference, 
+  color = Tree, 
+  shape = Tree)) + 
+  geom_point(size = 2, alpha = 0.5) + 
+  theme_classic() +
+  ggtitle("Age vs Circumference of Orange Trees") +
+  xlab("Age (in days since 12/31/1968)") + 
+  ylab("Circumference (in mm)") + 
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 5))
+print(orange_scatter)
+```
+
+
+Scatter plot with different trees distinctly marked by shape:
+
+```{r}
+library(ggplot2)
+orange_scatter <- ggplot(data = Orange, aes(x = age, y = circumference,
+  shape = Tree)) + 
+  geom_point(size = 2, alpha = 0.5) + 
+  theme_classic() +
+  ggtitle("Age vs Circumference of Orange Trees") +
+  xlab("Age (in days since 12/31/1968)") + 
+  ylab("Circumference (in mm)") + 
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 5))
+print(orange_scatter)
+```
+
+
