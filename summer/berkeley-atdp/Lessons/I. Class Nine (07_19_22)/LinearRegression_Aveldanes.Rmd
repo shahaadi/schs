@@ -1,0 +1,419 @@
+---
+title: "Complete Introduction to Linear Regression"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+head(cars)
+```
+
+Graphs that might help us build a linear regression model, we could do: boxplots, 
+scatterplots, density plots (to see distribution of the predictor variable)
+
+
+```{r}
+
+scatter.smooth(x=cars$speed, y = cars$dist, main = "Distance by Speed") #scatterplot
+
+
+```
+
+
+Note: one of the underlying assumptions of linear regression is that the relationship between the
+response and predictor variables is linear and additive. 
+
+
+
+Next, we can use boxplots to check for outliers 
+
+
+Boxplots (in general an outlier is a datapoint that lies outside the 1.5 IQR)
+
+```{r}
+
+par(mfrow=c(1,2)) #DIVIDE GRAPH IN TWO COLUMNS 
+
+boxplot(cars$speed, main = "Speed", sub=paste("Outlier rows: ", 
+  boxplot.stats(cars$speed)$out))
+
+
+boxplot(cars$dist, main = "Distance", sub=paste("Outlier rows: ", 
+  boxplot.stats(cars$dist)$out))
+
+
+```
+
+Using density plot to check if response variable is close to normal (or in other words close to a normal distribution)
+
+
+```{r}
+
+library(e1071) #for skewness function 
+par(mfrow=c(1,2)) #divide graph area into two columns 
+
+plot(density(cars$speed), main = "Density Plot: Speed", 
+     ylab = "Frequency", sub=paste("Skewness:", 
+                                   round(e1071::skewness(cars$speed))))
+
+polygon(density(cars$speed), col = "red")
+
+plot(density(cars$dist), main = "Density Plot: Distance", 
+     ylab = "Frequency", sub=paste("Skewness:", 
+                                   round(e1071::skewness(cars$dist))))
+
+polygon(density(cars$dist), col = "red")
+
+```
+
+Correlation Analysis: studies the strength of the relationship between two continous variables 
+
+- it involves computing the correlation coefficient between two variables 
+
+Correlation: a statistical measure that shows the degree of linear dependence between two variables 
+
+- in order to computer correlation, the two variables must occur in pairs, just like what we did 
+with speed and distance 
+
+Correlation can take values from -1 to +1 
+
+If one variable consistently increases with the increasing value of the other, then they have
+a strong postive correlation (value is closer to +1)
+
+If one variable consistently decreases when the other one increases, then they have a strong 
+negative correlation (value is closer to -1)
+
+Some things to note: 
+
+- a value that is closer to 0 indicates a week relationship 
+- a low correlation (-0.2 < x < 0.2) suggests that much of the variation of the response variable 
+is unexplained by the predictor (X). In this case, you should probably look for explanatory variables 
+
+
+CORRELATION =/= (DOES NOT MEAN) CAUSATION 
+
+note: just because two variables have a high correlation it does not mean one variable causes 
+the value of another 
+
+```{r}
+
+cor(cars$speed, cars$dist)
+
+```
+
+
+Building the Linear Relationship Model
+
+The function in  base R for building linear models is lm() 
+
+lm function takes two arguments: 
+
+- formula
+- data 
+
+Data is typically a data.frame object and the formula is a object of class formula 
+
+
+The most common convention is to write out the formula as written below 
+
+
+```{r}
+
+distsplm <- lm(dist~speed, data =cars) ##build linear regression model on full data
+
+print(distsplm)
+```
+
+By doing this regression mode, we have established the relationship between 
+the predictor and response in the form of a mathmetical formula 
+
+This is distance as a function of speed 
+
+From the above output we have two components 
+
+intercept: -17.579, Speed: 3.932
+
+
+Is this enough to use this model? NO! 
+
+Before using a regression model to make predictions, you need to make sure that it 
+is statistically significant. How do you make sure that this is the case? 
+
+```{r}
+summary(distsplm)
+```
+We can use p-values to check for statistical significance 
+
+- we can consider a linear model to be statistically significant only when both 
+these p-values are less than the pre-determined statistical significance value of 0.05 
+
+
+
+Null and Alternative Hypotheses 
+
+- Whenever you have a p-value, there is always a null and and alternate hypothesis 
+
+- What is the null hypothesis in this case? 
+
+  - In linear regression, the null hypthohesis (H0) is that the beta coefficients 
+  associated with the variables is equal to 0 
+  
+  - Alternate hypothesis that the coefficients are not equal to 0 (i.e., there exists 
+  a relationship between the independent and dependent variables)
+  
+  
+  
+T-values 
+
+
+ - A larger T-value indicates that it is less likely that the coefficient is not equal to 0 by pure chance 
+ - The higher the T-value the better 
+ - Pr(>|t|) is the p-value, or the probability that you get a t-value as high or higher than the observed value 
+ when the Null Hypothesis is equal to zero (or that there is no relationship)
+- So if the Pr(>|t|) value is low, the coefficients are significant, if the Pr(>|t|) values are high, then the coefficients 
+are not significant 
+
+What does this mean for us? 
+
+- when the p-value is less than the significance level of 0.05, you can safely reject the null hypothesis 
+that the coefficient of the predictor is zero 
+
+- In our case, both of the p-values are well below the 0.05 threshold 
+
+- So you can reject the null hypothesis and conclude that the model is indeed statistically significant 
+
+
+R-square and Adjusted R-squared 
+
+R-squared tells us the proportion of the variation in the dependent (response variable) that has been explained by this model 
+
+
+Adjusted R-squared
+
+So as you add more X variables to your mode, the R-squared value of the new bigger 
+model will always be greater than that of the smaller subset
+
+So why is this? 
+
+This is because, since all the variables in the original model are also present, their contribution to explain the dependent 
+variable will be present as well 
+
+
+So unlike R^2 that increases as the number of predictors increases, the adj-R-squared may not always increase 
+
+When comparing models it might be good practice to compare using adjusted R-squared vs. regular R-squared 
+
+
+Standard Error and F-Statistics 
+
+- both Standard Error and the F-statistic are measures of goodness of fit 
+- the closer to zero the better 
+- F-statistic the higher the better 
+
+
+- AIC (Akaike Information Criterion) and BIC (Bayesian Information Criterion)
+
+
+Statistic                                            Criterion
+
+R-squared                                            higher the better
+Adjusted R-squared                                   higher the better
+F-statistic                                          higher the better 
+Std. Error                                           closer to zero is better
+T-statistics                                         should be great 1.96 for p-value to be less than 0.05
+AIC                                                  lower the better 
+BIC                                                  Lower the better 
+
+
+
+Predicting Linear Models: 
+
+
+If you build a linear model by using the whole dataset, there's no way to tell how the model will perform with new data 
+
+The preferred practice is to split your data set into a 80:20 sample (training set) then you build the model 
+on 80% of your sample, and then use the model to predict the dependent variable on test data 
+
+Doing it this way, we will have the model predicted values for 20% of the data set (what we call the test set)
+as well as teh actuals (from the original data set)
+
+
+Step 1: Create the training and test data set 
+
+```{r}
+
+set.seed(100)
+
+trainindex <- sample(1:nrow(cars), 0.8*nrow(cars)) #training rows index 
+traindata <- cars[trainindex,]
+
+testdata <- cars[-trainindex,]
+
+```
+
+
+Step 2: To fit the model on training data and predict distance on test data 
+
+
+```{r}
+
+##Build model on training data 
+
+distmd <- lm(dist~speed, data = traindata)
+distpd <- predict(distmd, testdata)
+
+```
+
+
+##Step 3: Review diagnostic measures 
+
+
+```{r}
+
+summary(distmd)
+```
+
+##Step 4: Calculate Accuracy and Error Rates 
+
+- A simple correlation between the actuals and predicted values can be used as a form 
+of accuracy measure 
+- Higher correlation accuracy implies the actual and predicted values have similar directional movement
+  i.e. when the acutal values increase the predicted values also increase and vice-versa 
+  
+```{r}
+
+actual_preds <- data.frame(cbind(actuals=testdata$dist,
+                                 predicteds = distpd)) #make the actuals_preds a data frame 
+
+correlation_acc <- cor(actual_preds) ## 
+
+###
+
+actual_preds
+
+
+```
+
+
+
+
+```{r}
+head(actual_preds)
+```
+  
+##Calculate Min Max Accuracy 
+
+min_max_accuracy formula :  (mean(min(actuals, predicteds))/mean(actuals, predictedd))
+
+Min Max Accuracy will tell us how good of a prediction we have, the better the prediction the higher the Min Max accuracy will be
+
+```{r}
+
+
+min_max_acc <- mean(apply(actual_preds,1, min)/
+                      apply(actual_preds,1, max))
+
+min_max_acc
+```
+
+
+
+Mean Absolute Percentage Error (MAPE): mean (abs(predicteds, actuals)/(actuals))
+
+```{r}
+mape <- mean(abs((actual_preds$predicteds - actual_preds$actuals))/actual_preds$actuals)
+
+mape
+
+mape(actual_preds$actuals, actual_preds$predicteds)
+```
+
+##things to consider: RMSE & MSE 
+
+
+##K-Folds in Linear Regression 
+
+Suppose model predicts satisfactorily on the 20% split data, is that enough to believe your model will perform equally well
+all the time? 
+
+- it is possible that a few of the data points are not representative of the population on which the model is built 
+
+- For example, in the cars dataset, let's supposed that the cars in the 80% training dataset were used for road tests on concrete roads but the remaining 20% were used for road tests on muddy roads 
+
+If we trained our model with this, you can't expect the model to predict the distance in the test dataset with equal accuracy, simply because the model has not learned the relationship between speed and distance in such a setting 
+
+
+It is important to rigorously test the model performance as much as possible. One way to do this, is to check to see if the model 
+equation pefroms equally well when trained and tested on different distinct chunks of the data 
+
+This is what k-foldes does 
+
+1. splits you rdata into mutually exlusive random sample portions 
+2. Then iteratively builds k models, keepong one of the k-subsets as a test data each time 
+
+In each iteration, we build the model on the remaining (k-1 poprtion) data and then calculate mean squared error 
+of the predictions on the kth subset 
+
+At the end, the average of these mean squared errors is computed 
+
+Note: you can use these metrics to comapre different linear models 
+
+You need to check two things: 
+
+1. If the each of the k-fold model prediction accuracy isn't varying too much for one particular sample 
+2. If the lines of best fit from k-folds don't vary too much with respect to the slope and level. 
+
+```{r}
+
+
+```
+
+
+
+```{r}
+
+libray(caret)
+##install.packages("caret")
+
+ctrl <- trainControl(method = "cv", number =5)
+
+model <- train(dist~speed, data =cars, method = "lm", trControl = ctrl)
+
+print(model)
+
+model$finalModel
+
+```
+Use following code to view model predictions made for each fold 
+
+```{r}
+model$resample
+```
+
+
+Some things you should know: 
+
+a) Understand the linear regression is based on certain underlying assumptions 
+b) Once you're famiilar with that, you can work with advanced models to deal with various special cases 
+where a different form of regression is more suitable 
+
+1. Review the notebook 
+2. Jot down questions 
+3. Look up the different goodness of fit measures for linear regression models 
+4. Look up K-folds 
+
+
+
+
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
